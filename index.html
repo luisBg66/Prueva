@@ -3,25 +3,57 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MobileNet en Video (Detección Simple)</title>
+  <title>Clasificador de Objetos Nativo (TF.js)</title>
 
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
   
-  <style>
-    body { font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; }
-    #video { display: none; } /* Ocultamos el video, usaremos el canvas */
-    #canvas { border: 2px solid #58a6ff; }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>🎥 Clasificación Simple con MobileNet</h1>
+  <h1>🔍 Reconocimiento de Objetos Indígena (TF.js)</h1>
 
-  <video id="video" autoplay muted playsinline></video>
-  <canvas id="canvas"></canvas>
+  <div class="wrap">
+    <div class="camera">
+      <video id="video" autoplay muted playsinline></video>
+      <canvas id="canvas"></canvas>
+    </div>
 
-  <div id="status">Cargando modelos...</div>
-  <div id="prediction"></div>
+    <div class="panel">
+      <div class="row">
+        <div>Objeto detectado: <span id="prediccion">-</span></div>
+      </div>
+      
+      <h2>Capturar Muestras</h2>
+      <div class="row">
+        <label for="clase">Nombre del Objeto:</label>
+        <input id="clase" type="text" placeholder="Ej: taza, silla" />
+        <button id="btnCapturar">📸 Capturar Muestra</button>
+      </div>
+      
+      <div class="row">
+        <button id="btnEntrenar">🧠 Entrenar Modelo</button>
+        <button id="btnGuardar" class="secondary">💾 Guardar Modelo</button>
+      </div>
+
+      <div class="row">
+        <small id="muestrasInfo">Muestras capturadas: 0</small>
+      </div>
+      
+      <hr>
+
+      <h2>Traducciones</h2>
+      <div id="results">
+        <p><strong>Español:</strong> <span id="es_text">--</span></p>
+        <p><strong>Purépecha:</strong> <span id="purepecha_text">--</span></p>
+        <p><strong>Maya:</strong> <span id="maya_text">--</span></p>
+        <p><strong>Otomí:</strong> <span id="otomi_text">--</span></p>
+      </div>
+
+      <div id="status" class="smallcenter">Inicializando cámara y modelos...</div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>
