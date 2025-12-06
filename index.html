@@ -12,22 +12,57 @@
     body { font-family: Arial, sans-serif; padding: 20px; }
     #preview { max-width: 400px; max-height: 400px; margin: 15px 0; border: 1px solid #ccc; display: none; }
     #status { margin-top: 10px; font-weight: bold; color: #58a6ff; }
+    .wrap { display: flex; }
+    .camera { flex: 1; }
+    .panel { flex: 1; padding: 20px; border-left: 1px solid #ccc; }
+    .row { margin-bottom: 10px; }
+    .secondary { background-color: #f0f0f0; color: #333; }
+    .smallcenter { text-align: center; font-size: 0.9em; }
   </style>
 </head>
 <body>
   <h1>Clasificador de Imágenes Pre-entrenado</h1>
 
-  <input type="file" id="image-upload" accept="image/*" onchange="previewImage(event)">
-  <img id="preview">
-  
-  <button id="btnClasificar" disabled>🔍 Clasificar Imagen</button>
-  
-  <div id="status">Cargando modelo...</div>
-  
-  <h2>Resultados:</h2>
-  <div id="results">Esperando imagen...</div>
+  <div class="wrap">
+    <div class="camera">
+      <input type="file" id="image-upload" accept="image/*" onchange="previewImage(event)">
+      <img id="preview" style="max-height: 480px; max-width: 640px; display: block; margin: 10px auto;">
 
- <!-- <script src="script.js"></script> -->
+      <!-- Botón y resultados para la clasificación pre-entrenada -->
+      <div style="text-align:center; margin-top:10px;">
+        <button id="btnClasificar" disabled>🔍 Clasificar Imagen</button>
+      </div>
+      <h2>Resultados:</h2>
+      <div id="results">Esperando imagen...</div>
+    </div>
+
+    <div class="panel">
+      <div class="row">
+        <div>Objeto detectado: <span id="prediccion">-</span></div>
+      </div>
+      
+      <h2>Capturar Muestras</h2>
+      <div class="row">
+        <label for="clase">Nombre del Objeto:</label>
+        <input id="clase" type="text" placeholder="Ej: taza, silla" />
+        <button id="btnCapturar" disabled>📸 Capturar Muestra</button>
+      </div>
+      
+      <div class="row">
+        <button id="btnEntrenar" disabled>🧠 Entrenar Modelo</button>
+        <button id="btnGuardar" class="secondary" disabled>💾 Guardar Modelo</button>
+      </div>
+      
+      <div class="row">
+        <small id="muestrasInfo">Muestras capturadas: 0</small>
+      </div>
+      
+      <div id="status" class="smallcenter">Inicializando modelo...</div>
+      
+      </div>
+  </div>
+
+  <script src="script.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
