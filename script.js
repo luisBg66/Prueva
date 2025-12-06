@@ -7,32 +7,6 @@ const resultsEl = document.getElementById('results');
 
 let model = null;
 
-// --- EJEMPLO DE TU DICCIONARIO PERSONALIZADO ---
-// Mapea una palabra clave de MobileNet a tu objeto y traducciones
-const clasificacionesPersonalizadas = {
-    // Si MobileNet ve alguna de estas palabras...
-    "ballpoint, ballpoint pen, ballpen, Biro": { 
-        es: 'Bolígrafo', 
-        purepecha: 'Tz´intz´uni', 
-        maya: 'Tsíib', 
-        otomi: 'Xiúi' 
-    },
-    "coffee mug, coffee cup": {
-        es: 'Taza',
-        purepecha: 'Jantsïkua',
-        maya: 'Luch',
-        otomi: 'Ndami'
-    },
-    // Clave 2 (Opcional, si MobileNet lo confunde con una taza):
-    "cup": { 
-        es: 'Vaso o Taza', 
-        purepecha: 'Tzípua', 
-        maya: 'Lúuch',      
-        otomi: 'Ndá'        
-    },
-    // ... AQUÍ IRÍAN MÁS MAPEOS PARA TUS 30 OBJETOS
-};
-
 // ---------------------------------------------------------
 // Inicialización: Carga del modelo MobileNet
 async function loadMobileNet() {
@@ -64,7 +38,7 @@ function previewImage(event) {
 }
 
 // ---------------------------------------------------------
-// Función de Clasificación con Traducción
+// Función de Clasificación
 btnClasificar.addEventListener('click', async () => {
     if (!model || previewImg.style.display === 'none') {
         alert('Carga una imagen y espera a que el modelo cargue.');
@@ -76,40 +50,19 @@ btnClasificar.addEventListener('click', async () => {
     resultsEl.innerHTML = '';
     
     try {
+        // Usamos model.classify() para clasificar el elemento <img> directamente.
+        // Pedimos las 3 predicciones más probables.
         const predictions = await model.classify(previewImg, 3); 
 
-        let outputHTML = '<h2>Clasificación Principal:</h2>';
-        let foundTranslation = false;
-        
+        let outputHTML = '<ul>';
         predictions.forEach(p => {
-            const classKey = p.className;
+            // className contiene la etiqueta ImageNet (ej: 'tabby cat', 'coffe mug')
             const probability = (p.probability * 100).toFixed(2);
-            
-            outputHTML += `<li>${classKey}: ${probability}%</li>`;
-            
-            // ** NUEVA LÓGICA DE TRADUCCIÓN **
-            for (const key in clasificacionesPersonalizadas) {
-                if (classKey.includes(key)) { // Verifica coincidencias parciales
-                    const t = clasificacionesPersonalizadas[key];
-                    resultsEl.innerHTML = `
-                        ${outputHTML}
-                        <hr>
-                        <h2>Traducción Confirmada:</h2>
-                        <p><strong>Español:</strong> ${t.es}</p>
-                        <p><strong>Purépecha:</strong> ${t.purepecha}</p>
-                        <p><strong>Maya:</strong> ${t.maya}</p>
-                        <p><strong>Otomí:</strong> ${t.otomi}</p>
-                    `;
-                    foundTranslation = true;
-                    break;
-                }
-            }
+            outputHTML += `<li><strong>${p.className}</strong>: ${probability}%</li>`;
         });
+        outputHTML += '</ul>';
 
-        if (!foundTranslation) {
-            resultsEl.innerHTML = outputHTML + '<hr><p>Traducción: No se encontró un objeto mapeado en el top 3.</p>';
-        }
-
+        resultsEl.innerHTML = outputHTML;
         statusEl.textContent = 'Clasificación completada.';
 
     } catch (error) {
