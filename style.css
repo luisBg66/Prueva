@@ -1,6 +1,5 @@
 :root {
   --bg: #0d1117;
-  --panel: #0f1720;
   --accent: #58a6ff;
   --ok: #22c55e;
   --text: #e6edf3;
@@ -33,20 +32,13 @@ h1 {
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+  padding: 10px;
+  background: #161b22;
 }
 
-video {
-  display: block;
-  /* Ocultar el video para mostrar solo el canvas */
-  width: 640px; 
-  height: 480px; 
-  position: absolute;
-}
-
-canvas {
-  display: block;
-  width: 640px;
-  height: 480px;
+#preview {
+    border: 1px solid #30363d;
+    object-fit: contain;
 }
 
 .panel {

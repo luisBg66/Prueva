@@ -1,42 +1,27 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Clasificador de Imágenes (MobileNet)</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Clasificador de Objetos Estático (TF.js)</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
-  
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    #preview { max-width: 400px; max-height: 400px; margin: 15px 0; border: 1px solid #ccc; display: none; }
-    #status { margin-top: 10px; font-weight: bold; color: #58a6ff; }
-    .wrap { display: flex; }
-    .camera { flex: 1; }
-    .panel { flex: 1; padding: 20px; border-left: 1px solid #ccc; }
-    .row { margin-bottom: 10px; }
-    .secondary { background-color: #f0f0f0; color: #333; }
-    .smallcenter { text-align: center; font-size: 0.9em; }
-  </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
+    
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Clasificador de Imágenes Pre-entrenado</h1>
+  <h1>📸 Entrenamiento Estático de Objetos</h1>
 
   <div class="wrap">
     <div class="camera">
-      <input type="file" id="image-upload" accept="image/*" onchange="previewImage(event)">
-      <img id="preview" style="max-height: 480px; max-width: 640px; display: block; margin: 10px auto;">
-
-      <!-- Botón y resultados para la clasificación pre-entrenada -->
-      <div style="text-align:center; margin-top:10px;">
-        <button id="btnClasificar" disabled>🔍 Clasificar Imagen</button>
-      </div>
-      <h2>Resultados:</h2>
-      <div id="results">Esperando imagen...</div>
+      <input type="file" id="image-upload" accept="image/*" multiple onchange="handleFiles(event)">
+      <img id="preview" style="max-height: 480px; max-width: 640px; margin: 10px auto;">
     </div>
 
     <div class="panel">
+      
       <div class="row">
         <div>Objeto detectado: <span id="prediccion">-</span></div>
       </div>
@@ -45,7 +30,7 @@
       <div class="row">
         <label for="clase">Nombre del Objeto:</label>
         <input id="clase" type="text" placeholder="Ej: taza, silla" />
-        <button id="btnCapturar" disabled>📸 Capturar Muestra</button>
+        <button id="btnCapturar" disabled>📸 Capturar Muestras</button>
       </div>
       
       <div class="row">
@@ -54,15 +39,28 @@
       </div>
       
       <div class="row">
+        <button id="btnPredecir" disabled>🚀 Identificar Objeto</button>
+      </div>
+
+      <div class="row">
         <small id="muestrasInfo">Muestras capturadas: 0</small>
       </div>
       
       <div id="status" class="smallcenter">Inicializando modelo...</div>
-      
+
+      <hr>
+
+      <h2>Traducciones</h2>
+      <div id="results">
+        <p><strong>Español:</strong> <span id="es_text">--</span></p>
+        <p><strong>Purépecha:</strong> <span id="purepecha_text">--</span></p>
+        <p><strong>Maya:</strong> <span id="maya_text">--</span></p>
+        <p><strong>Otomí:</strong> <span id="otomi_text">--</span></p>
       </div>
+      
+    </div>
   </div>
 
   <script src="script.js"></script>
-  <script src="app.js"></script>
 </body>
 </html>
