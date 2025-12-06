@@ -1,0 +1,116 @@
+:root {
+  --bg: #0d1117;
+  --panel: #0f1720;
+  --accent: #58a6ff;
+  --ok: #22c55e;
+  --text: #e6edf3;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 18px;
+}
+
+h1 {
+  margin: 6px 0 12px;
+  text-align: center;
+}
+
+.wrap {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.camera {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6);
+}
+
+video, canvas {
+  display: block;
+  width: 640px;
+  height: 480px;
+}
+
+.panel {
+  width: 360px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid rgba(255,255,255,0.04);
+  padding: 14px;
+  border-radius: 10px;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 8px 0;
+}
+
+input[type="text"] {
+  width: 48px;
+  text-align: center;
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #333;
+  background: #0b0b0b;
+  color: var(--text);
+}
+
+button {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(180deg, var(--accent), #2b8bd6);
+  color: #fff;
+}
+
+button.secondary {
+  background: #334155;
+}
+
+#status {
+  margin-top: 10px;
+  color: var(--accent);
+}
+
+#prediccion {
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: var(--ok);
+}
+
+.bar {
+  height: 12px;
+  background: #222;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.bar > i {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--ok), #7ee787);
+}
+
+.smallcenter {
+  text-align: center;
+  margin-top: 10px;
+  color: #9aa4b2;
+}
+
+small {
+  color: #9aa4b2;
+}
