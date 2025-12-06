@@ -10,6 +10,8 @@ const claseInput = document.getElementById('clase');
 const btnCapturar = document.getElementById('btnCapturar');
 const btnEntrenar = document.getElementById('btnEntrenar');
 const btnGuardar = document.getElementById('btnGuardar');
+const btnExportar = document.getElementById('btnExportar');
+const btnExportarModelo = document.getElementById('btnExportarModelo');
 const muestrasInfo = document.getElementById('muestrasInfo');
 
 const esText = document.getElementById('es_text');
@@ -200,6 +202,47 @@ btnGuardar.addEventListener('click', async () => {
   if (!entrenado || !tfModel) { alert('Entrena primero'); return; }
   await tfModel.save('localstorage://clasificador-objetos');
   alert('Modelo guardado en localStorage del navegador.');
+});
+
+// ---------------------------------------------------------
+// Exportar Muestras (Datos)
+btnExportar.addEventListener('click', () => {
+    if (muestras.length === 0) {
+        alert('No hay muestras para exportar.');
+        return;
+    }
+    
+    // Convertir el array de muestras a una cadena JSON
+    const dataStr = JSON.stringify(muestras);
+    
+    // Crear un Blob (archivo binario) con el contenido JSON
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    
+    // Crear un enlace temporal para forzar la descarga
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'muestras_objetos.json'; // Nombre del archivo
+    
+    // Simular el clic para iniciar la descarga
+    a.click();
+    
+    alert(`Se exportaron ${muestras.length} muestras.`);
+});
+
+// ---------------------------------------------------------
+// Exportar Modelo como Archivos Descargables
+btnExportarModelo.addEventListener('click', async () => {
+    if (!entrenado || !tfModel) { alert('Entrena primero'); return; }
+
+    statusEl.textContent = 'Exportando modelo...';
+    try {
+        // Usa 'downloads://' para que el navegador descargue los archivos
+        await tfModel.save('downloads://clasificador-objetos');
+        statusEl.textContent = '✅ Modelo exportado y descargado.';
+    } catch (error) {
+        statusEl.textContent = '❌ Error al exportar el modelo.';
+        console.error("Error al exportar:", error);
+    }
 });
 
 
