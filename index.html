@@ -3,62 +3,26 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ASL - Handpose + TF.js (Captura y Entrena)</title>
+  <title>MobileNet en Video (Detección Simple)</title>
 
-  <!-- TensorFlow.js y Handpose -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/handpose"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
-
-  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+  
+  <style>
+    body { font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; }
+    #video { display: none; } /* Ocultamos el video, usaremos el canvas */
+    #canvas { border: 2px solid #58a6ff; }
+  </style>
 </head>
 <body>
-  <h1>🖐 Reconocimiento de Letras (Handpose + TF.js)</h1>
+  <h1>🎥 Clasificación Simple con MobileNet</h1>
 
-  <div class="wrap">
-    <div class="camera">
-      <video id="video" autoplay muted playsinline></video>
-      <canvas id="canvas"></canvas>
-    </div>
+  <video id="video" autoplay muted playsinline></video>
+  <canvas id="canvas"></canvas>
 
-    <div class="panel">
-      <div class="row">
-        <div>Letra actual: <span id="prediccion">-</span></div>
-      </div>
+  <div id="status">Cargando modelos...</div>
+  <div id="prediction"></div>
 
-      <div class="row">
-        <label for="letra">Letra para capturar:</label>
-        <input id="letra" maxlength="1" />
-        <button id="btnCapturar">📸 Capturar</button>
-      </div>
-
-      <div class="row">
-        <button id="btnEntrenar">🧠 Entrenar Modelo</button>
-        <button id="btnGuardar" class="secondary">💾 Guardar Modelo</button>
-      </div>
-
-      <div class="row">
-        <button id="btnExportar" class="secondary">⬇️ Exportar muestras</button>
-        <button id="btnImportar" class="secondary">⬆️ Importar muestras</button>
-      </div>
-
-      <div class="row">
-        <small id="muestrasInfo">Muestras: 0</small>
-      </div>
-
-      <div class="row">
-        <div style="width:100%">
-          <small>Confianza</small>
-          <div class="bar"><i id="confidenceBar"></i></div>
-        </div>
-      </div>
-
-      <div id="status" class="smallcenter">Inicializando cámara y modelo...</div>
-    </div>
-  </div>
-
-  <script src="script.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
