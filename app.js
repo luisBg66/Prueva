@@ -12,6 +12,7 @@ const btnEntrenar = document.getElementById('btnEntrenar');
 const btnGuardar = document.getElementById('btnGuardar');
 const btnExportar = document.getElementById('btnExportar');
 const btnExportarModelo = document.getElementById('btnExportarModelo');
+const btnImportar = document.getElementById('btnImportar');
 const muestrasInfo = document.getElementById('muestrasInfo');
 
 const esText = document.getElementById('es_text');
@@ -26,7 +27,8 @@ let muestras = []; // {clase, input: [1024 valores]}
 let clasesUnicas = []; // Nombres de las clases únicas detectadas
 
 // URL del extractor de características de MobileNet V2 (1024 dimensiones de salida)
-const MOBILE_NET_URL = 'https://tfhub.dev/google/tfjs-model/imagenet/mobilenet_v2_100_224/feature_vector/3/default/1';
+// Cambiar a MobileNet V1 para un modelo más rápido
+const MOBILE_NET_URL = 'https://tfhub.dev/google/tfjs-model/imagenet/mobilenet_v1_100_224/feature_vector/3/default/1';
 const IMAGE_SIZE = 224;
 
 // --- DICCIONARIO DE TRADUCCIONES (Mínimo 30 objetos) ---
@@ -155,7 +157,7 @@ btnCapturar.addEventListener('click', () => {
 // ---------------------------------------------------------
 // Entrenar modelo TF.js (MLP)
 btnEntrenar.addEventListener('click', async () => {
-  if (muestras.length < 30) { alert('Captura por lo menos 30 muestras (¡mínimo 5 por objeto!)'); return; }
+  if (muestras.length < 15) { alert('Captura por lo menos 15 muestras (¡mínimo 3 por objeto!)'); return; }
 
   statusEl.textContent = '🧠 Preparando y entrenando...';
 
@@ -171,17 +173,14 @@ btnEntrenar.addEventListener('click', async () => {
 
   // 3. Crear modelo Secuencial (MLP)
   const model = tf.sequential();
-  model.add(tf.layers.dense({ units: 128, inputShape: [1024], activation: 'relu' })); // Input 1024
-  model.add(tf.layers.dropout({ rate: 0.3 }));
-  model.add(tf.layers.dense({ units: 64, activation: 'relu' }));
-  model.add(tf.layers.dropout({ rate: 0.25 }));
+  model.add(tf.layers.dense({ units: 64, inputShape: [1024], activation: 'relu' })); // Simplificado
   model.add(tf.layers.dense({ units: clasesUnicas.length, activation: 'softmax' })); // Output: Num_Clases
 
   model.compile({ optimizer: tf.train.adam(0.001), loss: 'categoricalCrossentropy', metrics: ['accuracy'] });
 
   // 4. Entrenar
   await model.fit(X, yOneHot, { 
-      epochs: 30, // 30 épocas es un buen punto de partida para Transfer Learning
+      epochs: 10, // Reducido para optimización
       shuffle: true, 
       verbose: 1, 
       batchSize: Math.min(32, muestras.length) 
@@ -245,6 +244,42 @@ btnExportarModelo.addEventListener('click', async () => {
     }
 });
 
+// ---------------------------------------------------------
+// Importar Muestras (Datos)
+btnImportar.addEventListener('click', () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/json';
+
+    input.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (!file) {
+            alert('No se seleccionó ningún archivo.');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                if (!Array.isArray(importedData)) {
+                    throw new Error('El archivo no contiene un array válido.');
+                }
+
+                muestras = importedData;
+                muestrasInfo.textContent = `Muestras importadas: ${muestras.length}`;
+                alert(`Se importaron ${muestras.length} muestras correctamente.`);
+            } catch (error) {
+                alert('Error al importar las muestras. Asegúrate de que el archivo sea válido.');
+                console.error(error);
+            }
+        };
+
+        reader.readAsText(file);
+    });
+
+    input.click();
+});
 
 // ---------------------------------------------------------
 // Inicialización Principal
