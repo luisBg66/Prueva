@@ -35,11 +35,7 @@ let selectedFiles = [];
 
 // --- DICCIONARIO DE TRADUCCIONES ---
 const vocabulario = [
-   // script.js
-
-// --- DICCIONARIO DE TRADUCCIONES (40 OBJETOS) ---
-
-    // --- LOS PRIMEROS 10 (Incluyendo los solicitados) ---
+    // --- LOS PRIMEROS 10 ---
     { clase: 'taza', es: 'Taza', purepecha: 'Jantsïkua', maya: 'Luch', otomi: 'Ndami' },
     { clase: 'boligrafo', es: 'Bolígrafo', purepecha: 'Tz\'intz\'uni', maya: 'Ts\'íib', otomi: 'Xiúi' },
     { clase: 'lapiz', es: 'Lápiz', purepecha: 'Siríratarakua', maya: 'Che\'il ts\'íib', otomi: 'Y\'omfii' },
@@ -48,7 +44,7 @@ const vocabulario = [
     { clase: 'tijeras', es: 'Tijeras', purepecha: 'Pikurhukua', maya: 'X-t\'o\'op', otomi: 'Xäxi' },
     { clase: 'botella', es: 'Botella', purepecha: 'Urhu', maya: 'P\'uul', otomi: 'Xalo' },
     { clase: 'cuchara', es: 'Cuchara', purepecha: 'Kutsara', maya: 'X-p\'o\'ch', otomi: 'Kutsara' },
-    { clase: 'tenedor', es: 'Tenedor', purepecha: 'Pïreri', maya: 'X-p\'o\'ch che\'', otomi: 'Zá' },
+    { clase: 'tenedor', es: 'Tenedor', purepecha: 'Pïreri', maya: 'X-p\'o\'ch che\'', otomi: 'Zá\'i' },
     { clase: 'plato', es: 'Plato', purepecha: 'K\'orunda', maya: 'Lák', otomi: 'Mbo' },
 
     // --- OBJETOS DE USO PERSONAL ---
@@ -86,7 +82,6 @@ const vocabulario = [
     { clase: 'control', es: 'Control Remoto', purepecha: 'Control', maya: 'Mukul', otomi: 'Control' },
     { clase: 'jabon', es: 'Jabón', purepecha: 'Jupikurhakua', maya: 'Xibon', otomi: 'Jabón' },
     { clase: 'cepillo', es: 'Cepillo', purepecha: 'Cepillo', maya: 'Suus', otomi: 'Cepillo' },
-
 ];
 
 function getTranslation(className) {
@@ -173,6 +168,7 @@ btnCapturar.addEventListener('click', async () => {
     
     btnCapturar.disabled = false;
     btnEntrenar.disabled = false;
+    btnExportarMuestras.disabled = false; // Habilitar exportación si hay muestras
 });
 
 
@@ -182,6 +178,7 @@ btnEntrenar.addEventListener('click', async () => {
   if (muestras.length < 10) { alert('Captura por lo menos 10 muestras (mínimo 2 objetos).'); return; }
 
   statusEl.textContent = '🧠 Preparando y entrenando...';
+
   clasesUnicas = Array.from(new Set(muestras.map(m => m.clase)));
   if (clasesUnicas.length < 2) { alert('Necesitas al menos 2 objetos diferentes.'); return; }
 
@@ -197,7 +194,12 @@ btnEntrenar.addEventListener('click', async () => {
 
   model.compile({ optimizer: tf.train.adam(0.001), loss: 'categoricalCrossentropy', metrics: ['accuracy'] });
 
-  await model.fit(X, yOneHot, { epochs: 10, shuffle: true, verbose: 1, batchSize: Math.min(16, muestras.length) });
+  await model.fit(X, yOneHot, { 
+      epochs: 10, 
+      shuffle: true, 
+      verbose: 1, 
+      batchSize: Math.min(16, muestras.length) 
+  });
 
   tfModel = model;
   entrenado = true;
@@ -243,7 +245,6 @@ function predictImage() {
     statusEl.textContent = 'Identificación completada.';
 }
 
-// Event Listener para la identificación manual
 btnPredecir.addEventListener('click', () => {
     if (!entrenado) { alert("El modelo no ha sido entrenado o cargado."); return; }
     predictImage();
@@ -251,18 +252,18 @@ btnPredecir.addEventListener('click', () => {
 
 
 // ---------------------------------------------------------
-// 6. GESTIÓN DE ARCHIVOS (CORRECCIÓN DE EXPORTACIÓN)
+// 6. GESTIÓN DE ARCHIVOS (IMPORTAR/EXPORTAR MUESTRAS Y MODELO)
 // ---------------------------------------------------------
 
-// A. Exportar Muestras (CORREGIDO para serializar Float32Array)
+// A. Exportar Muestras (Datos)
 btnExportarMuestras.addEventListener('click', () => {
     if (muestras.length === 0) { alert('No hay muestras para exportar.'); return; }
     
-    // CONVERSIÓN CRÍTICA: Convertir cada Float32Array a un Array estándar para JSON
+    // Convertir Float32Array a Array estándar para que JSON lo guarde bien
     const exportableMuestras = muestras.map(muestra => {
         return {
             clase: muestra.clase,
-            input: Array.from(muestra.input) // Array.from() fuerza la conversión
+            input: Array.from(muestra.input) 
         };
     });
 
@@ -276,7 +277,7 @@ btnExportarMuestras.addEventListener('click', () => {
     alert(`Se exportaron ${muestras.length} muestras.`);
 });
 
-// B. Importar Muestras (Con verificación y corrección de tipo)
+// B. Importar Muestras (SUMAR, NO REEMPLAZAR)
 btnImportarMuestras.addEventListener('click', () => {
     const inputFile = document.createElement('input');
     inputFile.type = 'file';
@@ -288,28 +289,27 @@ btnImportarMuestras.addEventListener('click', () => {
         try {
             const arr = JSON.parse(text);
             
-            if (!Array.isArray(arr)) {
-                throw new Error('El archivo no contiene un array de muestras.');
-            }
+            if (!Array.isArray(arr)) { throw new Error('El archivo no contiene un array de muestras.'); }
             
-            // VERIFICACIÓN Y CONVERSIÓN: Asegurar que el input sea un Float32Array de 1024
-            const cleanedMuestras = arr.map(muestra => {
-                if (!muestra.input || muestra.input.length !== 1024) {
-                    return null;
-                }
-                // Convertir la entrada (que viene como Array estándar) a Float32Array
+            // Verificación y conversión a Float32Array
+            const nuevasMuestras = arr.map(muestra => {
+                if (!muestra.input || muestra.input.length !== 1024) { return null; }
                 muestra.input = new Float32Array(muestra.input);
                 return muestra;
             }).filter(m => m !== null); 
 
-            if (cleanedMuestras.length === 0) {
-                 throw new Error('No se encontraron muestras válidas (1024 dimensiones) para importar.');
+            if (nuevasMuestras.length === 0) {
+                 throw new Error('No se encontraron muestras válidas en el archivo.');
             }
             
-            muestras = cleanedMuestras;
+            // *** CORRECCIÓN PRINCIPAL: SUMAR (CONCATENAR) LAS MUESTRAS ***
+            muestras = muestras.concat(nuevasMuestras);
+
             muestrasInfo.textContent = `Muestras capturadas: ${muestras.length}`;
-            statusEl.textContent = `Muestras importadas: ${muestras.length}. ¡Listo para entrenar!`;
+            statusEl.textContent = `Se añadieron ${nuevasMuestras.length} muestras. Total: ${muestras.length}. ¡Listo para entrenar!`;
+            
             btnEntrenar.disabled = false;
+            btnExportarMuestras.disabled = false;
 
         } catch (err) {
             alert('Error importando muestras: ' + err.message);
@@ -359,7 +359,6 @@ btnExportarModelo.addEventListener('click', async () => {
     statusEl.textContent = 'Modelo cargado desde localStorage ✅';
     clasesUnicas = vocabulario.map(v => v.clase); 
 
-    // Habilitar controles si se carga el modelo
     btnGuardarLocal.disabled = false;
     btnExportarModelo.disabled = false; 
     btnPredecir.disabled = false; 
@@ -372,5 +371,9 @@ btnExportarModelo.addEventListener('click', async () => {
   if (selectedFiles.length > 0 && featureExtractorModel) {
     btnCapturar.disabled = false;
   }
-  btnEntrenar.disabled = false; 
+  
+  // Si tenemos muestras (por ejemplo si se persistieran), habilitar exportar
+  if (muestras.length > 0) {
+      btnExportarMuestras.disabled = false;
+  }
 })();
