@@ -3,8 +3,9 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Clasificador de Objetos Estático (TF.js)</title>
+    <title>Clasificador Híbrido (Estático + Webcam)</title>
 
+    <!-- Dependencias de TensorFlow.js -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
@@ -12,47 +13,64 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>📸 Entrenamiento Estático de Objetos</h1>
+  <h1>📸 Entrenamiento Estático & 📹 Detección en Vivo</h1>
 
   <div class="wrap">
     <div class="camera">
-      <input type="file" id="image-upload" accept="image/*" multiple onchange="handleFiles(event)">
-      <img id="preview" style="max-height: 480px; max-width: 640px; margin: 10px auto;">
+      <!-- 1. Contenedor visual: Puede mostrar la Imagen Estática O el Video -->
+      <div id="visual-container">
+          <img id="preview" style="display: block;">
+          <video id="webcam" autoplay muted playsinline style="display: none;"></video>
+      </div>
+
+      <!-- Controles de Fuente -->
+      <div class="source-controls" style="text-align: center; margin-top: 5px;">
+          <input type="file" id="image-upload" accept="image/*" multiple onchange="handleFiles(event)" style="display: none;">
+          <button onclick="document.getElementById('image-upload').click()" class="secondary">📂 Subir Imágenes</button>
+          <button id="btnWebcam" class="secondary">📹 Activar Webcam</button>
+      </div>
     </div>
 
     <div class="panel">
       
+      <!-- Sección de Predicción en Vivo -->
       <div class="row">
-        <div>Objeto detectado: <span id="prediccion">-</span></div>
+        <div>Objeto detectado: <span id="prediccion" style="font-size: 1.2em; color: #22c55e;">-</span></div>
       </div>
       
-      <h2>Capturar Muestras</h2>
+      <h2>Entrenamiento (Imágenes)</h2>
       <div class="row">
-        <label for="clase">Nombre del Objeto:</label>
-        <input id="clase" type="text" placeholder="Ej: taza, silla" />
-        <button id="btnCapturar" disabled>📸 Capturar Muestras</button>
+        <label for="clase">Nombre:</label>
+        <input id="clase" type="text" placeholder="Ej: taza" />
+        <button id="btnCapturar" disabled>📸 Capturar (Estático)</button>
       </div>
       
       <div class="row">
         <button id="btnEntrenar" disabled>🧠 Entrenar Modelo</button>
-        <button id="btnPredecir" disabled>🚀 Identificar Objeto</button>
+        <button id="btnGuardarLocal" class="secondary" disabled>💾 Guardar</button>
+      </div>
+
+      <div class="row">
+        <button id="btnPredecirEstático" disabled>🖼️ Identificar Foto</button>
       </div>
       
-      <h2>Gestión de Archivos</h2>
-      <div class="row">
-        <button id="btnExportarMuestras" class="secondary">⬇️ Exportar Muestras</button>
-        <button id="btnImportarMuestras" class="secondary">⬆️ Importar Muestras</button>
-      </div>
-      <div class="row">
-        <button id="btnGuardarLocal" class="secondary" disabled>💾 Guardar Modelo (Local)</button>
-        <button id="btnExportarModelo" class="secondary" disabled>⬇️ Exportar Modelo (Files)</button>
-      </div>
+      <!-- Gestión de Archivos -->
+      <details>
+        <summary>Gestión de Muestras y Modelo</summary>
+        <div class="row">
+            <button id="btnExportarMuestras" class="secondary">⬇️ Exp. Muestras</button>
+            <button id="btnImportarMuestras" class="secondary">⬆️ Imp. Muestras</button>
+        </div>
+        <div class="row">
+            <button id="btnExportarModelo" class="secondary">⬇️ Exp. Modelo</button>
+        </div>
+      </details>
       
       <div class="row">
         <small id="muestrasInfo">Muestras capturadas: 0</small>
       </div>
       
-      <div id="status" class="smallcenter">Inicializando modelo...</div>
+      <div id="status" class="smallcenter">Inicializando...</div>
 
       <hr>
 

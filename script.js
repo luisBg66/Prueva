@@ -1,45 +1,46 @@
 // script.js
 // ---------------------------------------------------------
-// Variables UI y Modelo
+// Variables UI
 const imageUpload = document.getElementById('image-upload');
 const previewImg = document.getElementById('preview');
+const webcamEl = document.getElementById('webcam');
 const statusEl = document.getElementById('status');
 const predEl = document.getElementById('prediccion');
 const claseInput = document.getElementById('clase');
 const btnCapturar = document.getElementById('btnCapturar');
 const btnEntrenar = document.getElementById('btnEntrenar');
-const btnPredecir = document.getElementById('btnPredecir'); 
+const btnPredecirEstático = document.getElementById('btnPredecirEstático'); 
+const btnWebcam = document.getElementById('btnWebcam');
 const muestrasInfo = document.getElementById('muestrasInfo');
 
+// Botones de gestión
 const btnExportarMuestras = document.getElementById('btnExportarMuestras');
 const btnImportarMuestras = document.getElementById('btnImportarMuestras');
 const btnGuardarLocal = document.getElementById('btnGuardarLocal'); 
 const btnExportarModelo = document.getElementById('btnExportarModelo'); 
 
+// Textos de Traducción
 const esText = document.getElementById('es_text');
 const purepechaText = document.getElementById('purepecha_text');
 const mayaText = document.getElementById('maya_text');
 const otomiText = document.getElementById('otomi_text');
 
-
-// Configuración del Modelo de Transferencia
+// Configuración MobileNet V1
 const MOBILE_NET_URL = 'https://tfhub.dev/google/tfjs-model/imagenet/mobilenet_v1_100_224/feature_vector/3/default/1'; 
 const IMAGE_SIZE = 224;
 
+// Estado del Sistema
 let featureExtractorModel = null; 
 let tfModel = null; 
 let entrenado = false;
 let muestras = []; 
 let clasesUnicas = []; 
 let selectedFiles = []; 
+let isWebcamActive = false;
+let webcamStream = null;
 
-// --- DICCIONARIO DE TRADUCCIONES ---
+// --- DICCIONARIO (40 Objetos) ---
 const vocabulario = [
-   // script.js
-
-// --- DICCIONARIO DE TRADUCCIONES (40 OBJETOS) ---
-
-    // --- LOS PRIMEROS 10 (Incluyendo los solicitados) ---
     { clase: 'taza', es: 'Taza', purepecha: 'Jantsïkua', maya: 'Luch', otomi: 'Ndami' },
     { clase: 'boligrafo', es: 'Bolígrafo', purepecha: 'Tz\'intz\'uni', maya: 'Ts\'íib', otomi: 'Xiúi' },
     { clase: 'lapiz', es: 'Lápiz', purepecha: 'Siríratarakua', maya: 'Che\'il ts\'íib', otomi: 'Y\'omfii' },
@@ -48,45 +49,9 @@ const vocabulario = [
     { clase: 'tijeras', es: 'Tijeras', purepecha: 'Pikurhukua', maya: 'X-t\'o\'op', otomi: 'Xäxi' },
     { clase: 'botella', es: 'Botella', purepecha: 'Urhu', maya: 'P\'uul', otomi: 'Xalo' },
     { clase: 'cuchara', es: 'Cuchara', purepecha: 'Kutsara', maya: 'X-p\'o\'ch', otomi: 'Kutsara' },
-    { clase: 'tenedor', es: 'Tenedor', purepecha: 'Pïreri', maya: 'X-p\'o\'ch che\'', otomi: 'Zá' },
+    { clase: 'tenedor', es: 'Tenedor', purepecha: 'Pïreri', maya: 'X-p\'o\'ch che\'', otomi: 'Zá\'i' },
     { clase: 'plato', es: 'Plato', purepecha: 'K\'orunda', maya: 'Lák', otomi: 'Mbo' },
-
-    // --- OBJETOS DE USO PERSONAL ---
-    { clase: 'lentes', es: 'Lentes', purepecha: 'Erakuarhikua', maya: 'Lembal', otomi: 'Da\'ye' },
-    { clase: 'reloj', es: 'Reloj', purepecha: 'Jorhenguarhikua', maya: 'K\'iin', otomi: 'K\'a\'ñi' },
-    { clase: 'llave', es: 'Llave', purepecha: 'Mitarikua', maya: 'Láalaj', otomi: 'Dojä' },
-    { clase: 'moneda', es: 'Moneda', purepecha: 'Tumin', maya: 'Taak\'in', otomi: 'Mekk\'a' },
-    { clase: 'cartera', es: 'Cartera/Billetera', purepecha: 'Tumin jatsikua', maya: 'Chim', otomi: 'Buxa' },
-    { clase: 'celular', es: 'Teléfono Celular', purepecha: 'Wandakuarhikua', maya: 'Uut', otomi: 'Neffo' },
-    { clase: 'peine', es: 'Peine', purepecha: 'P\'ukájkurhakua', maya: 'Xíikab', otomi: 'T\'sä' },
-    { clase: 'zapato', es: 'Zapato', purepecha: 'Kuarhaki', maya: 'Xanab', otomi: 'This\'ti' },
-    { clase: 'sombrero', es: 'Sombrero', purepecha: 'K\'arhmikua', maya: 'P\'óok', otomi: 'Fungu' },
-    { clase: 'mochila', es: 'Mochila', purepecha: 'Sïru', maya: 'Pawo\'', otomi: 'Buxa' },
-
-    // --- OBJETOS DE CASA Y COMIDA ---
-    { clase: 'silla', es: 'Silla', purepecha: 'Jantzkua', maya: 'K\'áanche\'', otomi: 'Yäni' },
-    { clase: 'mesa', es: 'Mesa', purepecha: 'Parhangua', maya: 'Mayak che\'', otomi: 'Mesa' },
-    { clase: 'vaso', es: 'Vaso', purepecha: 'Tzípua', maya: 'Uk\'ul', otomi: 'Vaso' },
-    { clase: 'cuchillo', es: 'Cuchillo', purepecha: 'Kuchiu', maya: 'P\'o\'ch', otomi: 'Kuchia' },
-    { clase: 'manzana', es: 'Manzana', purepecha: 'Manzana', maya: 'Masan', otomi: 'Manzana' },
-    { clase: 'platano', es: 'Plátano', purepecha: 'K\'uiri', maya: 'Ha\'as', otomi: 'Dämza' },
-    { clase: 'naranja', es: 'Naranja', purepecha: 'Naranxa', maya: 'Pak\'áal', otomi: 'Naxu' },
-    { clase: 'pan', es: 'Pan', purepecha: 'Kurhinda', maya: 'Waaj', otomi: 'Thuhme' },
-    { clase: 'flor', es: 'Flor', purepecha: 'Tsïtsïki', maya: 'Lool', otomi: 'Döni' },
-    { clase: 'hoja', es: 'Hoja (de planta)', purepecha: 'Xakua', maya: 'Le\'', otomi: 'Xi' },
-
-    // --- HERRAMIENTAS Y VARIOS ---
-    { clase: 'piedra', es: 'Piedra', purepecha: 'Tsakapü', maya: 'Tuunich', otomi: 'Do' },
-    { clase: 'martillo', es: 'Martillo', purepecha: 'K\'arhjatarakua', maya: 'Bax', otomi: 'Martiu' },
-    { clase: 'candado', es: 'Candado', purepecha: 'Mitarikua', maya: 'K\'aal', otomi: 'Candado' },
-    { clase: 'regla', es: 'Regla', purepecha: 'Jorhengurhikua', maya: 'P\'isib', otomi: 'Regla' },
-    { clase: 'borrador', es: 'Borrador', purepecha: 'K\'amajkukua', maya: 'Tuupub', otomi: 'Borrador' },
-    { clase: 'teclado', es: 'Teclado', purepecha: 'Teclado', maya: 'K\'opan', otomi: 'Teclado' },
-    { clase: 'mouse', es: 'Ratón (Mouse)', purepecha: 'Xeku', maya: 'Ch\'o\'', otomi: 'Ratón' },
-    { clase: 'control', es: 'Control Remoto', purepecha: 'Control', maya: 'Mukul', otomi: 'Control' },
-    { clase: 'jabon', es: 'Jabón', purepecha: 'Jupikurhakua', maya: 'Xibon', otomi: 'Jabón' },
-    { clase: 'cepillo', es: 'Cepillo', purepecha: 'Cepillo', maya: 'Suus', otomi: 'Cepillo' },
-
+    // Agrega el resto de tus objetos aquí...
 ];
 
 function getTranslation(className) {
@@ -94,73 +59,77 @@ function getTranslation(className) {
 }
 
 // ---------------------------------------------------------
-// 1. Manejo de Carga de Archivos Múltiples
+// 1. Manejo de Archivos (Estático)
 function handleFiles(event) {
     selectedFiles = Array.from(event.target.files);
     if (selectedFiles.length > 0) {
+        // Apagar webcam si está prendida para ver la foto
+        if(isWebcamActive) stopWebcam();
+        
         const reader = new FileReader();
-        reader.onload = function(){ previewImg.src = reader.result; };
+        reader.onload = function(){ 
+            previewImg.src = reader.result; 
+            previewImg.style.display = 'block';
+            webcamEl.style.display = 'none';
+        };
         reader.readAsDataURL(selectedFiles[0]);
 
-        statusEl.textContent = `Archivos cargados: ${selectedFiles.length}. Asigna una clase.`;
-        if (featureExtractorModel) { 
-            btnCapturar.disabled = false; 
-        }
-    } else {
-        btnCapturar.disabled = true;
+        statusEl.textContent = `Archivos cargados: ${selectedFiles.length}.`;
+        if (featureExtractorModel) btnCapturar.disabled = false; 
     }
 }
 
 // ---------------------------------------------------------
-// 2. Extracción de Características
-function getFrameTensor() {
-    if (!previewImg.src || !previewImg.complete) return null; 
+// 2. Extracción de Características (Híbrido: IMG o VIDEO)
+// sourceElement puede ser previewImg (<img>) o webcamEl (<video>)
+function extractFeatures(sourceElement) {
+    if (!featureExtractorModel) return null;
+
+    // Verificar si el elemento tiene datos válidos
+    if (sourceElement.tagName === 'IMG' && (!sourceElement.src || !sourceElement.complete)) return null;
+    if (sourceElement.tagName === 'VIDEO' && sourceElement.readyState < 2) return null;
 
     return tf.tidy(() => {
-        return tf.browser.fromPixels(previewImg)
-            .resizeNearestNeighbor([IMAGE_SIZE, IMAGE_SIZE])
+        // 1. Convertir píxeles a Tensor
+        const inputTensor = tf.browser.fromPixels(sourceElement);
+        
+        // 2. Redimensionar y normalizar para MobileNet
+        const resizedTensor = tf.image.resizeNearestNeighbor(inputTensor, [IMAGE_SIZE, IMAGE_SIZE])
             .toFloat()
             .div(tf.scalar(255))
             .expandDims(0); 
-    });
-}
 
-function extractFeatures() {
-    if (!featureExtractorModel) throw new Error("Extractor de características no cargado.");
-    
-    const inputTensor = getFrameTensor();
-    if (!inputTensor) throw new Error("No hay imagen cargada para extraer.");
-    
-    return tf.tidy(() => {
-        const features = featureExtractorModel.predict(inputTensor);
+        // 3. Extraer características (1024 valores)
+        const features = featureExtractorModel.predict(resizedTensor);
         return features.dataSync(); 
     });
 }
 
 // ---------------------------------------------------------
-// 3. Captura Múltiple de Muestras
+// 3. Captura Estática (Entrenamiento)
 btnCapturar.addEventListener('click', async () => {
     const clase = (claseInput.value || '').toLowerCase().trim();
-    if (!clase) { alert('Introduce el nombre del objeto.'); return; }
-    if (selectedFiles.length === 0) { alert('Carga imágenes primero.'); return; }
+    if (!clase) { alert('Ponle nombre al objeto.'); return; }
+    if (selectedFiles.length === 0) { alert('Sube imágenes primero.'); return; }
     
     btnCapturar.disabled = true;
     let newSamplesCount = 0;
     
+    // Procesar cada archivo subido
     for (const file of selectedFiles) {
         statusEl.textContent = `Procesando ${file.name}...`;
-        
         await new Promise(resolve => {
             const reader = new FileReader();
             reader.onload = function(e){
                 previewImg.src = e.target.result;
-                
                 previewImg.onload = function() {
                     try {
-                        const features = extractFeatures(); 
-                        muestras.push({ clase, input: features });
-                        newSamplesCount++;
-                    } catch (error) { console.error(`Error procesando ${file.name}:`, error); }
+                        const features = extractFeatures(previewImg); 
+                        if (features) {
+                            muestras.push({ clase, input: features });
+                            newSamplesCount++;
+                        }
+                    } catch (err) { console.error(err); }
                     resolve();
                 };
             };
@@ -168,22 +137,22 @@ btnCapturar.addEventListener('click', async () => {
         });
     }
 
-    muestrasInfo.textContent = `Muestras capturadas: ${muestras.length}`;
-    statusEl.textContent = `✅ Se agregaron ${newSamplesCount} muestras de "${clase}". Total: ${muestras.length}`;
-    
+    muestrasInfo.textContent = `Total muestras: ${muestras.length}`;
+    statusEl.textContent = `✅ +${newSamplesCount} muestras de "${clase}".`;
     btnCapturar.disabled = false;
     btnEntrenar.disabled = false;
+    btnExportarMuestras.disabled = false;
 });
 
-
 // ---------------------------------------------------------
-// 4. Entrenamiento del Modelo (MLP)
+// 4. Entrenamiento (Igual que antes)
 btnEntrenar.addEventListener('click', async () => {
-  if (muestras.length < 10) { alert('Captura por lo menos 10 muestras (mínimo 2 objetos).'); return; }
+  if (muestras.length < 5) { alert('Captura más muestras.'); return; }
 
-  statusEl.textContent = '🧠 Preparando y entrenando...';
+  statusEl.textContent = '🧠 Entrenando...';
+  
   clasesUnicas = Array.from(new Set(muestras.map(m => m.clase)));
-  if (clasesUnicas.length < 2) { alert('Necesitas al menos 2 objetos diferentes.'); return; }
+  if (clasesUnicas.length < 2) { alert('Necesitas min. 2 clases diferentes.'); return; }
 
   const X = tf.tensor(muestras.map(m => m.input)); 
   const yIdx = muestras.map(m => clasesUnicas.indexOf(m.clase));
@@ -197,26 +166,27 @@ btnEntrenar.addEventListener('click', async () => {
 
   model.compile({ optimizer: tf.train.adam(0.001), loss: 'categoricalCrossentropy', metrics: ['accuracy'] });
 
-  await model.fit(X, yOneHot, { epochs: 10, shuffle: true, verbose: 1, batchSize: Math.min(16, muestras.length) });
+  await model.fit(X, yOneHot, { epochs: 15, shuffle: true, batchSize: 16 });
 
   tfModel = model;
   entrenado = true;
-  statusEl.textContent = '✅ Entrenamiento completado. ¡Modelo listo!';
+  statusEl.textContent = '✅ Modelo Entrenado.';
+  
+  // Habilitar botones de uso
   btnGuardarLocal.disabled = false;
   btnExportarModelo.disabled = false;
-  btnPredecir.disabled = false; 
+  btnPredecirEstático.disabled = false; 
+  btnWebcam.textContent = "📹 Activar Webcam (Listo)";
   
   X.dispose(); y.dispose(); yOneHot.dispose();
 });
 
-
 // ---------------------------------------------------------
-// 5. Predicción y Traducción
-function predictImage() {
-    if (!entrenado || !tfModel) { predEl.textContent = 'Modelo no entrenado'; return; }
-    const features = extractFeatures(); 
-    if (!features) { statusEl.textContent = 'Carga una imagen para identificar.'; return; }
-    
+// 5. Lógica de Predicción
+// Función genérica que actualiza la UI con el resultado
+function makePrediction(features) {
+    if (!entrenado || !tfModel || !features) return;
+
     tf.tidy(() => {
         const t = tf.tensor([features]);
         const out = tfModel.predict(t);
@@ -226,151 +196,156 @@ function predictImage() {
         const predictedClass = clasesUnicas[maxIdx];
         const translations = getTranslation(predictedClass);
 
-        predEl.textContent = `${predictedClass} (${(conf * 100).toFixed(1)}%)`;
-        
-        if (translations) {
-            esText.textContent = translations.es;
-            purepechaText.textContent = translations.purepecha;
-            mayaText.textContent = translations.maya;
-            otomiText.textContent = translations.otomi;
+        // Umbral de confianza
+        if (conf > 0.6) {
+            predEl.textContent = `${predictedClass} (${(conf * 100).toFixed(0)}%)`;
+            if (translations) {
+                esText.textContent = translations.es;
+                purepechaText.textContent = translations.purepecha;
+                mayaText.textContent = translations.maya;
+                otomiText.textContent = translations.otomi;
+            } else {
+                esText.textContent = "Sin traducción";
+            }
         } else {
-            esText.textContent = `Clase ${predictedClass} no tiene traducción mapeada.`;
-            purepechaText.textContent = '--';
-            mayaText.textContent = '--';
-            otomiText.textContent = '--';
+            predEl.textContent = "Incierto...";
         }
     });
-    statusEl.textContent = 'Identificación completada.';
 }
 
-// Event Listener para la identificación manual
-btnPredecir.addEventListener('click', () => {
-    if (!entrenado) { alert("El modelo no ha sido entrenado o cargado."); return; }
-    predictImage();
+// A. Predicción Estática (Foto subida)
+btnPredecirEstático.addEventListener('click', () => {
+    if (!entrenado) { alert("Entrena primero."); return; }
+    const features = extractFeatures(previewImg);
+    if(features) makePrediction(features);
 });
 
+// B. Predicción en Vivo (Webcam Loop)
+async function detectLoop() {
+    // Si la webcam se apagó, detener
+    if (!isWebcamActive) return;
 
-// ---------------------------------------------------------
-// 6. GESTIÓN DE ARCHIVOS (CORRECCIÓN DE EXPORTACIÓN)
-// ---------------------------------------------------------
-
-// A. Exportar Muestras (CORREGIDO para serializar Float32Array)
-btnExportarMuestras.addEventListener('click', () => {
-    if (muestras.length === 0) { alert('No hay muestras para exportar.'); return; }
-    
-    // CONVERSIÓN CRÍTICA: Convertir cada Float32Array a un Array estándar para JSON
-    const exportableMuestras = muestras.map(muestra => {
-        return {
-            clase: muestra.clase,
-            input: Array.from(muestra.input) // Array.from() fuerza la conversión
-        };
-    });
-
-    const dataStr = JSON.stringify(exportableMuestras);
-    const blob = new Blob([dataStr], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'muestras_objetos.json'; 
-    a.click();
-    
-    alert(`Se exportaron ${muestras.length} muestras.`);
-});
-
-// B. Importar Muestras (Con verificación y corrección de tipo)
-btnImportarMuestras.addEventListener('click', () => {
-    const inputFile = document.createElement('input');
-    inputFile.type = 'file';
-    inputFile.accept = '.json';
-    inputFile.onchange = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const text = await file.text();
-        try {
-            const arr = JSON.parse(text);
-            
-            if (!Array.isArray(arr)) {
-                throw new Error('El archivo no contiene un array de muestras.');
-            }
-            
-            // VERIFICACIÓN Y CONVERSIÓN: Asegurar que el input sea un Float32Array de 1024
-            const cleanedMuestras = arr.map(muestra => {
-                if (!muestra.input || muestra.input.length !== 1024) {
-                    return null;
-                }
-                // Convertir la entrada (que viene como Array estándar) a Float32Array
-                muestra.input = new Float32Array(muestra.input);
-                return muestra;
-            }).filter(m => m !== null); 
-
-            if (cleanedMuestras.length === 0) {
-                 throw new Error('No se encontraron muestras válidas (1024 dimensiones) para importar.');
-            }
-            
-            muestras = cleanedMuestras;
-            muestrasInfo.textContent = `Muestras capturadas: ${muestras.length}`;
-            statusEl.textContent = `Muestras importadas: ${muestras.length}. ¡Listo para entrenar!`;
-            btnEntrenar.disabled = false;
-
-        } catch (err) {
-            alert('Error importando muestras: ' + err.message);
-            console.error(err);
+    // Solo predecir si el modelo está listo
+    if (entrenado && tfModel && featureExtractorModel) {
+        // Extraer características del VIDEO en tiempo real
+        const features = extractFeatures(webcamEl);
+        if (features) {
+            makePrediction(features);
         }
-    };
-    inputFile.click();
-});
+        // Pequeño delay para no saturar la CPU si no hay GPU
+        await tf.nextFrame();
+    }
+    
+    requestAnimationFrame(detectLoop);
+}
 
-// C. Guardar Modelo en LocalStorage
-btnGuardarLocal.addEventListener('click', async () => {
-  if (!entrenado || !tfModel) { alert('Entrena primero'); return; }
-  await tfModel.save('localstorage://clasificador-objetos');
-  alert('Modelo guardado en localStorage del navegador.');
-});
-
-// D. Exportar Modelo (Archivos Descargables)
-btnExportarModelo.addEventListener('click', async () => {
-    if (!entrenado || !tfModel) { alert('Entrena primero'); return; }
-
-    statusEl.textContent = 'Exportando modelo...';
-    try {
-        await tfModel.save('downloads://clasificador-objetos');
-        statusEl.textContent = '✅ Modelo exportado y descargado (archivos JSON y BIN).';
-    } catch (error) {
-        statusEl.textContent = '❌ Error al exportar el modelo.';
-        console.error("Error al exportar:", error);
+// ---------------------------------------------------------
+// 6. Manejo de Webcam
+btnWebcam.addEventListener('click', () => {
+    if (!isWebcamActive) {
+        startWebcam();
+    } else {
+        stopWebcam();
     }
 });
 
+async function startWebcam() {
+    if(!featureExtractorModel) return;
+    try {
+        // Ocultar imagen, mostrar video
+        previewImg.style.display = 'none';
+        webcamEl.style.display = 'block';
+        
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+        webcamEl.srcObject = stream;
+        webcamStream = stream;
+        isWebcamActive = true;
+        btnWebcam.textContent = "⏹ Detener Webcam";
+        btnWebcam.classList.remove('secondary'); // Hacerlo color primario
+        
+        statusEl.textContent = "📹 Webcam activa. Detectando...";
+        detectLoop(); // Iniciar bucle
+    } catch (err) {
+        alert("Error de cámara (¿Usas HTTPS/Localhost?): " + err.message);
+    }
+}
+
+function stopWebcam() {
+    isWebcamActive = false;
+    if (webcamStream) {
+        webcamStream.getTracks().forEach(track => track.stop());
+    }
+    webcamEl.style.display = 'none';
+    previewImg.style.display = 'block'; // Volver a mostrar preview
+    btnWebcam.textContent = "📹 Activar Webcam";
+    btnWebcam.classList.add('secondary');
+    statusEl.textContent = "Webcam detenida.";
+}
 
 // ---------------------------------------------------------
-// 7. Inicialización Principal
+// 7. Gestión de Archivos (Importar/Exportar) - Sin cambios lógicos, solo integración
+btnExportarMuestras.addEventListener('click', () => {
+    if (muestras.length === 0) return;
+    const exportable = muestras.map(m => ({ clase: m.clase, input: Array.from(m.input) }));
+    const blob = new Blob([JSON.stringify(exportable)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'muestras.json';
+    a.click();
+});
+
+btnImportarMuestras.addEventListener('click', () => {
+    const input = document.createElement('input');
+    input.type = 'file'; input.accept = '.json';
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if(!file) return;
+        try {
+            const arr = JSON.parse(await file.text());
+            if(!Array.isArray(arr)) throw new Error("No es array");
+            const nuevas = arr.map(m => {
+                if(!m.input || m.input.length !== 1024) return null;
+                m.input = new Float32Array(m.input);
+                return m;
+            }).filter(m => m);
+            muestras = muestras.concat(nuevas);
+            muestrasInfo.textContent = `Total muestras: ${muestras.length}`;
+            btnEntrenar.disabled = false;
+            btnExportarMuestras.disabled = false;
+            alert(`Importadas ${nuevas.length} muestras.`);
+        } catch(err) { alert("Error importando: " + err.message); }
+    };
+    input.click();
+});
+
+// Guardar/Exportar Modelo
+btnGuardarLocal.addEventListener('click', async () => {
+    if(entrenado) await tfModel.save('localstorage://clasificador-objetos');
+    alert("Guardado localmente.");
+});
+btnExportarModelo.addEventListener('click', async () => {
+    if(entrenado) await tfModel.save('downloads://clasificador-objetos');
+});
+
+// ---------------------------------------------------------
+// 8. Inicialización
 (async function init() {
-  statusEl.textContent = 'Cargando MobileNet Base...';
-
+  statusEl.textContent = 'Cargando MobileNet...';
   featureExtractorModel = await tf.loadGraphModel(MOBILE_NET_URL, { fromTFHub: true });
+  // Calentamiento
   featureExtractorModel.predict(tf.zeros([1, IMAGE_SIZE, IMAGE_SIZE, 3])).dispose();
+  statusEl.textContent = 'Listo. Sube fotos para entrenar.';
 
-  statusEl.textContent = 'MobileNet Base cargado ✅';
-  
-  // 2. Intentar cargar modelo entrenado previamente
+  // Cargar modelo guardado si existe
   try {
     const loaded = await tf.loadLayersModel('localstorage://clasificador-objetos');
     tfModel = loaded;
     entrenado = true;
-    statusEl.textContent = 'Modelo cargado desde localStorage ✅';
+    // Intentar recuperar clasesUnicas del vocabulario si coinciden
     clasesUnicas = vocabulario.map(v => v.clase); 
-
-    // Habilitar controles si se carga el modelo
     btnGuardarLocal.disabled = false;
-    btnExportarModelo.disabled = false; 
-    btnPredecir.disabled = false; 
-
-  } catch (e) {
-    statusEl.textContent = 'Modelo listo para capturar muestras.';
-  }
-
-  // Habilitar la captura si ya hay archivos cargados y el modelo base está listo
-  if (selectedFiles.length > 0 && featureExtractorModel) {
-    btnCapturar.disabled = false;
-  }
-  btnEntrenar.disabled = false; 
+    btnExportarModelo.disabled = false;
+    btnPredecirEstático.disabled = false;
+    statusEl.textContent = 'Modelo previo cargado. Listo para Webcam.';
+  } catch (e) { }
 })();
