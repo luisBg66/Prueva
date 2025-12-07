@@ -35,9 +35,58 @@ let selectedFiles = [];
 
 // --- DICCIONARIO DE TRADUCCIONES ---
 const vocabulario = [
+   // script.js
+
+// --- DICCIONARIO DE TRADUCCIONES (40 OBJETOS) ---
+
+    // --- LOS PRIMEROS 10 (Incluyendo los solicitados) ---
     { clase: 'taza', es: 'Taza', purepecha: 'Jantsïkua', maya: 'Luch', otomi: 'Ndami' },
-    { clase: 'boligrafo', es: 'Bolígrafo', purepecha: 'Tz´intz´uni', maya: 'Tsíib', otomi: 'Xiúi' },
+    { clase: 'boligrafo', es: 'Bolígrafo', purepecha: 'Tz\'intz\'uni', maya: 'Ts\'íib', otomi: 'Xiúi' },
+    { clase: 'lapiz', es: 'Lápiz', purepecha: 'Siríratarakua', maya: 'Che\'il ts\'íib', otomi: 'Y\'omfii' },
+    { clase: 'libro', es: 'Libro', purepecha: 'Karákata', maya: 'Áanalte\'', otomi: 'Hë\'mi' },
+    { clase: 'cuaderno', es: 'Cuaderno', purepecha: 'Siríratarakua', maya: 'Ju\'un', otomi: 'Hë\'mi t\'ofo' },
+    { clase: 'tijeras', es: 'Tijeras', purepecha: 'Pikurhukua', maya: 'X-t\'o\'op', otomi: 'Xäxi' },
+    { clase: 'botella', es: 'Botella', purepecha: 'Urhu', maya: 'P\'uul', otomi: 'Xalo' },
+    { clase: 'cuchara', es: 'Cuchara', purepecha: 'Kutsara', maya: 'X-p\'o\'ch', otomi: 'Kutsara' },
+    { clase: 'tenedor', es: 'Tenedor', purepecha: 'Pïreri', maya: 'X-p\'o\'ch che\'', otomi: 'Zá' },
+    { clase: 'plato', es: 'Plato', purepecha: 'K\'orunda', maya: 'Lák', otomi: 'Mbo' },
+
+    // --- OBJETOS DE USO PERSONAL ---
+    { clase: 'lentes', es: 'Lentes', purepecha: 'Erakuarhikua', maya: 'Lembal', otomi: 'Da\'ye' },
+    { clase: 'reloj', es: 'Reloj', purepecha: 'Jorhenguarhikua', maya: 'K\'iin', otomi: 'K\'a\'ñi' },
+    { clase: 'llave', es: 'Llave', purepecha: 'Mitarikua', maya: 'Láalaj', otomi: 'Dojä' },
+    { clase: 'moneda', es: 'Moneda', purepecha: 'Tumin', maya: 'Taak\'in', otomi: 'Mekk\'a' },
+    { clase: 'cartera', es: 'Cartera/Billetera', purepecha: 'Tumin jatsikua', maya: 'Chim', otomi: 'Buxa' },
+    { clase: 'celular', es: 'Teléfono Celular', purepecha: 'Wandakuarhikua', maya: 'Uut', otomi: 'Neffo' },
+    { clase: 'peine', es: 'Peine', purepecha: 'P\'ukájkurhakua', maya: 'Xíikab', otomi: 'T\'sä' },
+    { clase: 'zapato', es: 'Zapato', purepecha: 'Kuarhaki', maya: 'Xanab', otomi: 'This\'ti' },
+    { clase: 'sombrero', es: 'Sombrero', purepecha: 'K\'arhmikua', maya: 'P\'óok', otomi: 'Fungu' },
+    { clase: 'mochila', es: 'Mochila', purepecha: 'Sïru', maya: 'Pawo\'', otomi: 'Buxa' },
+
+    // --- OBJETOS DE CASA Y COMIDA ---
     { clase: 'silla', es: 'Silla', purepecha: 'Jantzkua', maya: 'K\'áanche\'', otomi: 'Yäni' },
+    { clase: 'mesa', es: 'Mesa', purepecha: 'Parhangua', maya: 'Mayak che\'', otomi: 'Mesa' },
+    { clase: 'vaso', es: 'Vaso', purepecha: 'Tzípua', maya: 'Uk\'ul', otomi: 'Vaso' },
+    { clase: 'cuchillo', es: 'Cuchillo', purepecha: 'Kuchiu', maya: 'P\'o\'ch', otomi: 'Kuchia' },
+    { clase: 'manzana', es: 'Manzana', purepecha: 'Manzana', maya: 'Masan', otomi: 'Manzana' },
+    { clase: 'platano', es: 'Plátano', purepecha: 'K\'uiri', maya: 'Ha\'as', otomi: 'Dämza' },
+    { clase: 'naranja', es: 'Naranja', purepecha: 'Naranxa', maya: 'Pak\'áal', otomi: 'Naxu' },
+    { clase: 'pan', es: 'Pan', purepecha: 'Kurhinda', maya: 'Waaj', otomi: 'Thuhme' },
+    { clase: 'flor', es: 'Flor', purepecha: 'Tsïtsïki', maya: 'Lool', otomi: 'Döni' },
+    { clase: 'hoja', es: 'Hoja (de planta)', purepecha: 'Xakua', maya: 'Le\'', otomi: 'Xi' },
+
+    // --- HERRAMIENTAS Y VARIOS ---
+    { clase: 'piedra', es: 'Piedra', purepecha: 'Tsakapü', maya: 'Tuunich', otomi: 'Do' },
+    { clase: 'martillo', es: 'Martillo', purepecha: 'K\'arhjatarakua', maya: 'Bax', otomi: 'Martiu' },
+    { clase: 'candado', es: 'Candado', purepecha: 'Mitarikua', maya: 'K\'aal', otomi: 'Candado' },
+    { clase: 'regla', es: 'Regla', purepecha: 'Jorhengurhikua', maya: 'P\'isib', otomi: 'Regla' },
+    { clase: 'borrador', es: 'Borrador', purepecha: 'K\'amajkukua', maya: 'Tuupub', otomi: 'Borrador' },
+    { clase: 'teclado', es: 'Teclado', purepecha: 'Teclado', maya: 'K\'opan', otomi: 'Teclado' },
+    { clase: 'mouse', es: 'Ratón (Mouse)', purepecha: 'Xeku', maya: 'Ch\'o\'', otomi: 'Ratón' },
+    { clase: 'control', es: 'Control Remoto', purepecha: 'Control', maya: 'Mukul', otomi: 'Control' },
+    { clase: 'jabon', es: 'Jabón', purepecha: 'Jupikurhakua', maya: 'Xibon', otomi: 'Jabón' },
+    { clase: 'cepillo', es: 'Cepillo', purepecha: 'Cepillo', maya: 'Suus', otomi: 'Cepillo' },
+
 ];
 
 function getTranslation(className) {
